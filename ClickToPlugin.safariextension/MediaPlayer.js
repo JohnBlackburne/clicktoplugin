@@ -375,7 +375,7 @@ MediaPlayer.prototype.initShadowDOM = function() {
 	
 	var shadowDOM = {};
 	for(var e in pseudoElements) {
-		sheet.insertRule("#" + this.mediaElement.id + ":not(:-webkit-full-screen)::" + pseudoElements[e] + "{}", 0);
+		sheet.insertRule("#" + this.mediaElement.id + pseudoElements[e] + "{}", 0);
 		shadowDOM[e] = sheet.cssRules[0];
 	}
 	
