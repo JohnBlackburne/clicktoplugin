@@ -368,47 +368,20 @@ ShadowDOM interface
 MediaPlayer.prototype.initShadowDOM = function() {
 	var sheet = this.container.appendChild(document.createElement("style")).sheet;
 	
-	// Hide status display in fullscreen
 	sheet.insertRule("#" + this.mediaElement.id + ":-webkit-full-screen::-webkit-media-controls-status-display{display:none;}", 0);
 	
-	var pseudoElements = {"controlsPanel": "-webkit-media-controls-panel", "statusDisplay": "-webkit-media-controls-status-display", "statusDisplayAfter": "-webkit-media-controls-status-display::after", "playButton": "-webkit-media-controls-play-button", "muteButton": "-webkit-media-controls-mute-button", "volumeSliderContainer": "-webkit-media-controls-volume-slider-container", "rewindButton": "-webkit-media-controls-rewind-button", "fullscreenButton": "-webkit-media-controls-fullscreen-button", "timelineContainer": "-webkit-media-controls-timeline-container"};
+	var pseudoElements = {"controlsPanel": "-webkit-media-controls-panel", "statusDisplay": "-webkit-media-controls-status-display", "playButton": "-webkit-media-controls-play-button", "muteButton": "-webkit-media-controls-mute-button", "volumeSliderContainer": "-webkit-media-controls-volume-slider-container", "rewindButton": "-webkit-media-controls-rewind-button", "fullscreenButton": "-webkit-media-controls-fullscreen-button", "timelineContainer": "-webkit-media-controls-timeline-container"};
 	
 	var shadowDOM = {};
 	for(var e in pseudoElements) {
-		sheet.insertRule("#" + this.mediaElement.id + pseudoElements[e] + "{}", 0);
+		sheet.insertRule("#" + this.mediaElement.id + ":not(:-webkit-full-screen)::" + pseudoElements[e] + "{}", 0);
 		shadowDOM[e] = sheet.cssRules[0];
 	}
 	
-	shadowDOM.controlsPanel.style.position = "absolute"; // for height < 25 in Safari 6 (cf. mediaControls.css)
+	shadowDOM.controlsPanel.style.position = "absolute";
 	if(settings.hideRewindButton) shadowDOM.rewindButton.style.display = "none";
 	
-	// Status display
-	shadowDOM.statusDisplay.style.textAlign = "left"; // set to "right" in UA stylesheet
-	shadowDOM.statusDisplay.style.whiteSpace = "pre";
-	shadowDOM.statusDisplay.style.textOverflow = "ellipsis";
-	shadowDOM.statusDisplayAfter.style.paddingLeft = "1ex";
-	
-	var _this = this;
-	shadowDOM.update = function() {
-		// Add title after status display
-		var text = "";
-		if(_this.playlistLength > 1) text += "[" + _this.printTrack(_this.currentTrack) + "/" + _this.playlistLength + "]\u2002";
-		text += _this.getTitle().replace(/'/g, "\\'");
-		this.statusDisplayAfter.style.content = "'" + text + "'";
-		
-		// Hide the timeline (WebKit fails to do so when loading a new source)
-		this.timelineContainer.style.display = "none";
-		// Show status display
-		this.statusDisplay.style.setProperty("display", "block", "important");
-	};
-	
-	this.mediaElement.addEventListener("loadedmetadata", function() {
-		// Remove !important from statusDisplay.style.display so WebKit can hide it if appropriate
-		shadowDOM.statusDisplay.style.removeProperty("display"); // see #45778
-		shadowDOM.statusDisplay.style.display = "block";
-		// Show the timeline
-		shadowDOM.timelineContainer.style.removeProperty("display");
-	}, false);
+	shadowDOM.update = function() {};
 	
 	this.shadowDOM = shadowDOM;
 };
